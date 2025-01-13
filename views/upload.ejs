@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <!-- ... (head content) ... -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  </head>
+  <body>
+    <h1>File Upload and Download</h1>
+
+    <!-- File Upload Form with Progress Bar -->
+    <form id="uploadForm" enctype="multipart/form-data">
+      <input type="file" name="file" required />
+      <button type="submit">Upload File</button>
+    </form>
+    <div id="progressContainer" style="display: none">
+      <div id="progressBar"></div>
+      <div id="progressStatus"></div>
+    </div>
+
+    <!-- List of Uploaded Files -->
+    <h2>Uploaded Files</h2>
+    <ul>
+      <% files.forEach(file => { %>
+      <li>
+        <%= file %>
+        <a href="/download/<%= encodeURIComponent(file) %>">Download</a>
+      </li>
+      <% }); %>
+    </ul>
+
+    <script>
+      $(document).ready(function () {
+        $("#uploadForm").submit(function (e) {
+          e.preventDefault();
+
+          var formData = new FormData(this);
+          $("#progressContainer").show();
+
+          $.ajax({
+            url: "/upload",
+            type: "POST",
+            data: formData,
+            processData: false,
+            contentType: false,
+            xhr: function () {
+              var xhr = new window.XMLHttpRequest();
+              xhr.upload.addEventListener("progress", function (e) {
+                if (e.lengthComputable) {
+                  var percent = (e.loaded / e.total) * 100;
+                  $("#progressBar").css("width", percent + "%");
+                  $("#progressStatus").text(percent.toFixed(2) + "%");
+                }
+              });
+              return xhr;
+            },
+            success: function (response) {
+              $("#progressContainer").hide();
+              window.location.reload();
+            },
+            error: function (xhr, status, error) {
+              console.error("Upload error:", error);
+              $("#progressContainer").hide();
+              alert("Upload failed: " + error);
+            },
+          });
+        });
+      });
+    </script>
+  </body>
+</html>
