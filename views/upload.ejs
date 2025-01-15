@@ -151,11 +151,21 @@
     <!-- List of Uploaded Files -->
     <h2>Uploaded Files</h2>
     <ul>
-      <% files.forEach(file => { %>
+      <% if (files.length === 0) { %>
+      <p>No files uploaded</p>
+      <% } else { %> <% files.forEach(file => { %>
       <li>
         <div class="file-info">
           <strong><%= file.original_name %></strong>
           <!-- <span>(Uploaded on: <%= file.upload_date %>)</span> -->
+          <span>
+            Size: <% let size; if (file.file_size < 1024) { size =
+            file.file_size + " Bytes"; } else if (file.file_size < 1024 * 1024)
+            { size = (file.file_size / 1024).toFixed(2) + " KB"; } else if
+            (file.file_size < 1024 * 1024 * 1024) { size = (file.file_size /
+            (1024 * 1024)).toFixed(2) + " MB"; } else { size = (file.file_size /
+            (1024 * 1024 * 1024)).toFixed(2) + " GB"; } %> <%= size %>
+          </span>
           <span>Downloads: <%= file.downloads %></span>
         </div>
         <div class="file-actions">
@@ -163,7 +173,7 @@
           <button class="delete-btn" data-id="<%= file.id %>">Delete</button>
         </div>
       </li>
-      <% }); %>
+      <% }); %> <% } %>
     </ul>
 
     <script>

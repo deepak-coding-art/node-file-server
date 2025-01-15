@@ -20,6 +20,7 @@ const db = new sqlite3.Database("filedata.db", (err) => {
         original_name TEXT NOT NULL,
         generated_name TEXT NOT NULL,
         upload_date TEXT NOT NULL,
+        file_size INTEGER NOT NULL,
         downloads INTEGER DEFAULT 0
       )
     `);
@@ -82,13 +83,12 @@ app.use("/uploads", express.static("uploads"));
 
 // Endpoint for file upload
 app.post("/upload", upload.single("file"), (req, res) => {
-  const { originalname } = req.file;
+  const { originalname, size } = req.file;
   const generatedName = req.file.filename;
   const uploadDate = new Date().toISOString();
-
   db.run(
-    `INSERT INTO files (original_name, generated_name, upload_date, downloads) VALUES (?, ?, ?, 0)`,
-    [originalname, generatedName, uploadDate],
+    `INSERT INTO files (original_name, generated_name, upload_date, file_size, downloads) VALUES (?, ?, ?, ?, 0)`,
+    [originalname, generatedName, uploadDate, size],
     function (err) {
       if (err) {
         console.error(err);
@@ -206,7 +206,7 @@ const deleteUnreferencedFiles = () => {
 };
 
 // Schedules
-deleteUnreferencedFiles(); // also run on startup
+setTimeout(deleteUnreferencedFiles, 5000); // also run on startup
 setInterval(deleteUnreferencedFiles, 1000 * 60 * 60 * 24); // Run every day
 
 app.listen(port, () => {
